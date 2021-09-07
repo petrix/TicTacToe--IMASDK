@@ -1,12 +1,18 @@
-import "./styles/style.scss";
-
+import "../styles/style.scss";
+import { removeSplashScreen } from "./splashScreen";
 const playField = document.createElement("canvas").getContext("2d");
 playField.canvas.width = 1280;
 playField.canvas.height = 720;
 document.querySelector("#app").appendChild(playField.canvas);
+
+const roleSelector = ["x", "o"];
+let roleValue;
 window.onload = () => {
     resize();
     draw();
+    removeSplashScreen();
+    roleValue = roleSelector[Math.round(Math.random())];
+    console.log(roleValue);
 };
 const placeHolderCTX = document.createElement("canvas").getContext("2d");
 placeHolderCTX.canvas.width = 180;
@@ -15,35 +21,40 @@ placeHolderCTX.i = 0;
 placeHolderCTX.posX = 240;
 placeHolderCTX.posY = 240;
 placeHolderCTX.step = 240;
+
 const battleField = [...new Array(3)].map(elem => new Array(3));
 
 function drawPlaceholder() {
-    let cornerRadius = 20;
+    let cornerRadius = 90;
     placeHolderCTX.clearRect(0, 0, placeHolderCTX.canvas.width, placeHolderCTX.canvas.height);
-    // let colorValue = JSON.stringify(placeHolderCTX.i).padStart(2, "0");
-    let colorValue = JSON.stringify(placeHolderCTX.i).padStart(2, "0");
-    // placeHolderCTX.strokeStyle = `#${toHex(colorValue)}${toHex(colorValue)}${toHex(colorValue)}${toHex(255 - colorValue)}`;
-    placeHolderCTX.i += 2;
-    placeHolderCTX.i %= 200;
-    // if (placeHolderCTX.i < 100) {
-    //     placeHolderCTX.strokeStyle = `transparent`;
-    // } else {
-    placeHolderCTX.strokeStyle = `#311`;
-    // }
-    placeHolderCTX.fillStyle = "#000";
-    // scrollTXTCtx.font = fontSize + "px " + fontName;
-    placeHolderCTX.font = "50px Bender-Bold";
-    placeHolderCTX.textBaseline = "middle";
-    // placeHolderCTX.fillText(toHex(colorValue), placeHolderCTX.canvas.width / 2, placeHolderCTX.canvas.height / 2);
+    placeHolderCTX.i += 0.1;
+    placeHolderCTX.i %= 100;
+
+    // placeHolderCTX.strokeStyle = `rgba(60,0,0,${placeHolderCTX.i / 100})`;
+    placeHolderCTX.strokeStyle = `rgba(60,0,0,1)`;
+    // placeHolderCTX.fillStyle = "#000";
+    // placeHolderCTX.font = "50px Bender-Bold";
+    // placeHolderCTX.textBaseline = "middle";
     placeHolderCTX.lineJoin = "round";
     placeHolderCTX.lineWidth = cornerRadius;
-
-    placeHolderCTX.strokeRect(
-        cornerRadius / 2,
-        cornerRadius / 2,
-        placeHolderCTX.canvas.width - cornerRadius,
-        placeHolderCTX.canvas.height - cornerRadius,
+    placeHolderCTX.beginPath();
+    // placeHolderCTX.moveTo(placeHolderCTX.canvas.width / 2, placeHolderCTX.canvas.height / 2);
+    placeHolderCTX.arc(
+        placeHolderCTX.canvas.width / 2,
+        placeHolderCTX.canvas.height / 2,
+        45, -Math.PI / 2,
+        Math.PI * 1.5 * (-placeHolderCTX.i / 100) - Math.PI / 2,
     );
+    // placeHolderCTX.arc(0, 0, 150, 0, Math.PI * 2);
+    // placeHolderCTX.fillStyle = "#000";
+    // placeHolderCTX.fill();
+    placeHolderCTX.stroke();
+    // placeHolderCTX.strokeRect(
+    //     cornerRadius / 2,
+    //     cornerRadius / 2,
+    //     placeHolderCTX.canvas.width - cornerRadius,
+    //     placeHolderCTX.canvas.height - cornerRadius,
+    // );
     return placeHolderCTX.canvas;
 }
 const placeHolder = drawPlaceholder();
@@ -53,15 +64,39 @@ function drawX() {
     XCTX.canvas.width = 180;
     XCTX.canvas.height = 180;
     XCTX.beginPath();
-    XCTX.lineWidth = 50;
+    XCTX.lineWidth = 20;
     XCTX.lineCap = "round";
     XCTX.fillStyle = "#000";
-    XCTX.strokeStyle = "#f00";
+    XCTX.strokeStyle = "#a00";
     XCTX.beginPath();
-    XCTX.moveTo(0, 0);
-    XCTX.lineTo(XCTX.canvas.width, XCTX.canvas.height);
+    XCTX.moveTo(10, 10);
+    XCTX.lineTo(XCTX.canvas.width - 10, XCTX.canvas.height - 10);
     XCTX.stroke();
+    // XCTX.closePath();
+    // XCTX.beginPath();
+    XCTX.moveTo(XCTX.canvas.width - 10, 10);
+    XCTX.lineTo(10, XCTX.canvas.height - 10);
+    XCTX.stroke();
+    // XCTX.closePath();
     return XCTX.canvas;
+}
+
+function drawO() {
+    const OCTX = document.createElement("canvas").getContext("2d");
+    OCTX.canvas.width = 180;
+    OCTX.canvas.height = 180;
+    OCTX.beginPath();
+    OCTX.lineWidth = 20;
+    OCTX.lineCap = "round";
+    OCTX.fillStyle = "#000";
+    OCTX.strokeStyle = "#00a";
+    OCTX.beginPath();
+    // OCTX.moveTo(10, 10);
+    // OCTX.lineTo(XCTX.canvas.width - 10, XCTX.canvas.height - 10);
+    OCTX.arc(90, 90, 80, 0, Math.PI * 2);
+    OCTX.stroke();
+    OCTX.closePath();
+    return OCTX.canvas;
 }
 
 function drawGrid() {
@@ -98,23 +133,44 @@ function drawGrid() {
 
 const gridLayer = drawGrid();
 
-function drawSquare(ox) {
-    // console.log(ox);
+function drawSquare() {
     const squareCTX = document.createElement("canvas").getContext("2d");
     squareCTX.canvas.width = 720;
     squareCTX.canvas.height = 720;
     squareCTX.drawImage(gridLayer, 0, 0);
+
+    battleField.forEach((arr, column) =>
+        arr.forEach((elem, row) => {
+            if (elem == "x") {
+                squareCTX.save();
+                squareCTX.translate(
+                    squareCTX.canvas.width / 2 + placeHolderCTX.step * column - placeHolderCTX.step,
+                    squareCTX.canvas.height / 2 + placeHolderCTX.step * row - placeHolderCTX.step,
+                );
+                squareCTX.drawImage(drawX(), -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
+                squareCTX.restore();
+            } else if (elem == "o") {
+                squareCTX.save();
+                squareCTX.translate(
+                    squareCTX.canvas.width / 2 + placeHolderCTX.step * column - placeHolderCTX.step,
+                    squareCTX.canvas.height / 2 + placeHolderCTX.step * row - placeHolderCTX.step,
+                );
+                squareCTX.drawImage(drawO(), -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
+                squareCTX.restore();
+            }
+        }),
+    );
+
     squareCTX.save();
     squareCTX.translate(
         squareCTX.canvas.width / 2 + placeHolderCTX.posX - placeHolderCTX.step,
         squareCTX.canvas.height / 2 + placeHolderCTX.posY - placeHolderCTX.step,
     );
-    if (ox == "x") squareCTX.drawImage(drawX(), -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
-
-    // squareCTX.translate(placeHolderCTX.posX, placeHolderCTX.posY);
     squareCTX.drawImage(drawPlaceholder(), -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
-    // squareCTX.drawImage(drawPlaceholder(), 0, 0);
     squareCTX.restore();
+    /////////////////////////////////
+
+    ///////////////////////////////
     return squareCTX.canvas;
 }
 let drawHandler;
@@ -122,18 +178,27 @@ let drawHandler;
 function draw() {
     drawHandler = requestAnimationFrame(draw);
     playField.clearRect(0, 0, playField.canvas.width, playField.canvas.height);
-
-    // playField.fillStyle = "#666";
-    // playField.fillRect(0, 0, playField.canvas.width, playField.canvas.height);
-
     playField.drawImage(
-        // gridLayer,
         drawSquare(),
-        playField.canvas.width - playField.canvas.height,
+        playField.canvas.width / 2 - playField.canvas.height / 2,
         0,
         playField.canvas.height,
         playField.canvas.height,
     );
+    playField.fillStyle = "#000";
+    playField.font = "40px Bender-Bold";
+    playField.textBaseline = "middle";
+    playField.fillText("PLAYER", 10, 100);
+    let measure = Math.floor(playField.measureText("COMPUTER").width);
+    playField.fillText("COMPUTER", playField.canvas.width - measure - 10, 100);
+    if (roleValue == "x") {
+        playField.drawImage(drawX(), 30, 140, 100, 100);
+        playField.drawImage(drawO(), 1150, 140, 100, 100);
+    } else {
+        playField.drawImage(drawO(), 30, 140, 100, 100);
+        playField.drawImage(drawX(), 1150, 140, 100, 100);
+    }
+
     ////////////////////////////////
 }
 
@@ -142,18 +207,6 @@ window.addEventListener("resize", resize);
 function resize() {
     playField.ratio = playField.canvas.width / playField.canvas.height;
     window.ratio = window.innerWidth / window.innerHeight;
-    // if (playField.ratio < window.ratio) {
-    //     if (window.innerHeight < 720) {
-    //         playField.canvas.height = window.innerHeight;
-    //         playField.canvas.width = window.innerHeight * (16 / 9);
-    //     }
-    // } else {
-    //     if (window.innerWidth < 1280) {
-    //         playField.canvas.width = window.innerWidth;
-    //         playField.canvas.height = window.innerWidth / (16 / 9);
-    //     }
-    // }
-    // draw();
     if (window.innerWidth < 1280) {
         if (window.ratio < playField.ratio) {
             document.querySelector("#app").setAttribute("style", "transform:scale(" + window.innerWidth / 1280 + ")");
@@ -191,19 +244,38 @@ document.addEventListener("keydown", function(event) {
             placeHolderCTX.posX >= placeHolderCTX.step * 2 ? (placeHolderCTX.posX = placeHolderCTX.step * 2) : false;
             break;
         case "SPACE":
-            console.log(placeHolderCTX.posX, placeHolderCTX.posY);
-            // drawSquare("x");
-            userHit(placeHolderCTX.posX, placeHolderCTX.posY);
+            // console.log(placeHolderCTX.posX, placeHolderCTX.posY);
+            // userHit(placeHolderCTX.posX, placeHolderCTX.posY);
+            battleField[placeHolderCTX.posX / placeHolderCTX.step][placeHolderCTX.posY / placeHolderCTX.step] = roleValue;
+            placeHolderCTX.i = 0;
             break;
+        case "ENTER":
+            let xx;
 
+            xx = roleSelector[(roleSelector.indexOf(roleValue) + 1) % 2];
+
+            battleField[placeHolderCTX.posX / placeHolderCTX.step][placeHolderCTX.posY / placeHolderCTX.step] = xx;
+            placeHolderCTX.i = 0;
+
+            break;
+        case "KEYX":
+            break;
         default:
             break;
     }
+    console.log(battleField);
 });
 
 function userHit(x, y) {
-    battleField[x / 240][y / 240] = "x";
+    battleField[x / 240][y / 240] = roleValue;
     console.log(x, y, battleField);
+    // battleField.forEach((arr, column) =>
+    //     arr.forEach((elem, row) => {
+    //         if (elem == "o") {
+    //             console.log(elem, row, column);
+    //         }
+    //     }),
+    // );
 }
 
 function toHex(d) {

@@ -1,4 +1,5 @@
 @import "./bender-bold.scss";
+@import "./MagnoliaScript-font.scss";
 * {
     outline: none;
     user-select: none;
@@ -32,6 +33,7 @@ body {
     align-items: center;
     overflow: hidden;
     font-family: "Bender-Bold";
+    background: radial-gradient(circle, rgb(143, 143, 143) 0%, #3a4242 100%);
 }
 
 #app {

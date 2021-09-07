@@ -22,18 +22,30 @@
             align-items: center;
             justify-content: center;
             opacity: 1;
-            transition: opacity 500ms;
+            transition: opacity 300ms;
             font-size: 6vh;
             color: wheat;
+            animation: hide 1s forwards;
+            animation-play-state: paused;
+        }
+        
+        @keyframes hide {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
         }
     </style>
 </head>
 
 <body>
+    <section class="splashscreen">
+    </section>
     <div id="app"></div>
-    <!-- <section class="splashscreen">
-    </section> -->
-    <script type="module" src="/main.js"></script>
+
+    <script type="module" src="/js/main.js"></script>
 </body>
 
 </html>
