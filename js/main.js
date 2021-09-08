@@ -531,6 +531,9 @@ function congratsScreen(gamer) {
         document.querySelector(".splashscreen").appendChild(playBTN);
         document.querySelector(".splashscreen").appendChild(awayBTN);
         playBTN.addEventListener("click", playAds);
+        awayBTN.addEventListener("click", () => {
+            window.location.href = "https://google.com";
+        });
     });
 }
 
