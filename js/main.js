@@ -1,5 +1,5 @@
 import "../styles/style.scss";
-import { splashScreen } from "./splashScreen";
+import { splashScreen, adsScreen } from "./splashScreen";
 import { initDesktopAutoplayExample } from "./ads";
 const playField = document.createElement("canvas").getContext("2d");
 playField.canvas.width = 1280;
@@ -7,74 +7,77 @@ playField.canvas.height = 720;
 document.querySelector("#app").appendChild(playField.canvas);
 const roleSelector = ["x", "o"];
 let roleValue;
-let activeGamer;
+// let activeGamer;
 let stepCounter = 0;
 let drawHandler;
+let congratulationGamer = "";
+const winCombinations = [
+    [0, 4, 8],
+    [2, 4, 6],
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+];
 const battleField = [...new Array(3)].map(elem => new Array(3).fill(""));
-let userRole, computerRole;
+let userRole, compRole;
 window.onload = () => {
-    drawWelcomeScreen();
+    congratsScreen("welcome");
+    resize();
 };
 
 function runApp() {
+    congratulationGamer = "";
+    console.clear();
     console.log("runAPP");
     battleField.forEach(arr => arr.fill(""));
     stepCounter = 0;
     initKeyBoard();
-    // playBTN.removeEventListener("click");
     cancelAnimationFrame(drawHandler);
     draw();
-    resize();
-    document.querySelector(".adsWindow").remove();
-    splashScreen("hide").then(z => {
-        document.querySelector(".splashscreen").innerHTML = "";
-        // console.log(z)
-        roleValue = roleSelector[Math.round(Math.random())];
-        activeGamer = roleValue;
-        userRole = roleValue;
-        if (roleValue == "o") {
-            activeGamer = activeGamer = roleSelector[(roleSelector.indexOf(activeGamer) + ++stepCounter) % 2];
-            compStep();
-        }
-    });
+    adsScreen("hide");
+    splashScreen("hide")
+        .then(z => {
+            document.removeEventListener("keydown", splashKeyB);
+            roleValue = roleSelector[Math.round(Math.random())];
+            if (roleValue == "x") {
+                compRole = "x";
+                userRole = "o";
+                console.log("comp first", compRole, "user", userRole);
+                compStep();
+            } else {
+                userRole = "x";
+                compRole = "o";
+                console.log("user first", userRole, "comp", compRole);
+            }
+        })
+        .then(e => {
+            setTimeout(() => {
+                document.querySelector(".splashscreen").innerHTML = "";
+                document.querySelector(".adsWindow").innerHTML = "";
+            }, 1000);
+        });
 }
 
-function drawWelcomeScreen() {
-    const message = document.createElement("p");
-    message.innerText = "ARE YOU READY TO PLAY?";
-    const playBTN = document.createElement("button");
-    playBTN.setAttribute("id", "play");
-    playBTN.classList.add("btn-hover");
-    playBTN.innerText = "LET'S PLAY !";
-    const awayBTN = document.createElement("button");
-    awayBTN.innerText = "...or go away...";
-    awayBTN.setAttribute("id", "away");
-    awayBTN.classList.add("btn-hover");
+function rmBtnEvtListeners() {
+    document.querySelectorAll(".splashscreen div").forEach(btn => {
+        console.log(btn);
 
-    document.querySelector(".splashscreen").appendChild(message);
-    document.querySelector(".splashscreen").appendChild(playBTN);
-    document.querySelector(".splashscreen").appendChild(awayBTN);
-    // playBTN.addEventListener("click", runApp);
-    playBTN.addEventListener("click", playAds);
-    awayBTN.addEventListener("click", () => {
-        window.location.href = "https://google.com";
+        let clone = btn.cloneNode();
+        clone.style.cursor = "default";
+        btn.parentNode.replaceChild(clone, btn);
     });
 }
 
 function playAds() {
-    const adsWindow = document.createElement("section");
-    adsWindow.classList.add("adsWindow");
-    // adsWindow.innerHTML = `        <div id="mainContainer">
-    //         <div id="content">
-    //             <video id="contentElement" muted playsinline>
-    //       <source src="https://storage.googleapis.com/gvabox/media/samples/stock.mp4"/>
-    //     </video>
-    //         </div>
-    //         <div id="adContainer"></div>
-    //     </div>
-    //     <button id="playButton">Play</button>`;
+    adsScreen("show");
+    rmBtnEvtListeners();
+    const adsWindow = document.querySelector(".adsWindow");
     const mainContainer = document.createElement("div");
     mainContainer.setAttribute("id", "mainContainer");
+    mainContainer.setAttribute("style", `transform:${document.querySelector("#app").style.transform}`);
     const content = document.createElement("div");
     content.setAttribute("id", "content");
     const adContainer = document.createElement("div");
@@ -96,17 +99,21 @@ function playAds() {
     mainContainer.appendChild(playButton);
 
     adsWindow.appendChild(mainContainer);
-
-    document.querySelector(".splashscreen").after(adsWindow);
+    contentElement.addEventListener("loadstart", console.log("loadstart"));
+    contentElement.addEventListener("loadeddata", console.log("loadeddata"));
+    contentElement.addEventListener("canplay", console.log("canplay"));
+    // document.querySelector(".splashscreen").after(adsWindow);
 
     splashScreen("hide").then(e => {
+        document.removeEventListener("keydown", splashKeyB);
         console.log(e, "splashScreen hidden");
         initDesktopAutoplayExample();
         console.log(contentElement);
         contentElement.addEventListener("ended", () => {
-            // splashScreen.innerHTML = ''
-            adsWindow.style.opacity = 0;
-            runApp();
+            console.log("VIDEO ENDED");
+            adsScreen("hide").then(e => {
+                runApp();
+            });
         });
     });
 }
@@ -124,25 +131,12 @@ function drawPlaceholder() {
     placeHolderCTX.i += 0.1;
     placeHolderCTX.i %= 100;
 
-    // placeHolderCTX.strokeStyle = `rgba(60,0,0,${placeHolderCTX.i / 100})`;
     placeHolderCTX.strokeStyle = `rgba(60,0,0,0.5)`;
-    // placeHolderCTX.fillStyle = "#000";
-    // placeHolderCTX.font = "50px Bender-Bold";
-    // placeHolderCTX.textBaseline = "middle";
-    placeHolderCTX.setLineDash([10]);
+
+    placeHolderCTX.setLineDash([20, 10]);
     placeHolderCTX.lineJoin = "round";
     placeHolderCTX.lineWidth = cornerRadius;
-    // placeHolderCTX.beginPath();
-    // // placeHolderCTX.moveTo(placeHolderCTX.canvas.width / 2, placeHolderCTX.canvas.height / 2);
-    // placeHolderCTX.arc(
-    //     placeHolderCTX.canvas.width / 2,
-    //     placeHolderCTX.canvas.height / 2,
-    //     45, -Math.PI / 2,
-    //     Math.PI * 1.5 * (-placeHolderCTX.i / 100) - Math.PI / 2,
-    // );
-    // placeHolderCTX.arc(0, 0, 150, 0, Math.PI * 2);
-    // placeHolderCTX.fillStyle = "#000";
-    // placeHolderCTX.fill();
+
     placeHolderCTX.rect(
         cornerRadius / 2,
         cornerRadius / 2,
@@ -150,12 +144,7 @@ function drawPlaceholder() {
         placeHolderCTX.canvas.height - cornerRadius,
     );
     placeHolderCTX.stroke();
-    // placeHolderCTX.strokeRect(
-    //     cornerRadius / 2,
-    //     cornerRadius / 2,
-    //     placeHolderCTX.canvas.width - cornerRadius,
-    //     placeHolderCTX.canvas.height - cornerRadius,
-    // );
+
     return placeHolderCTX.canvas;
 }
 const placeHolder = drawPlaceholder();
@@ -293,25 +282,20 @@ function draw() {
         playField.canvas.width / 2 + placeHolderCTX.posX - placeHolderCTX.step,
         playField.canvas.height / 2 + placeHolderCTX.posY - placeHolderCTX.step,
     );
-    playField.globalAlpha = 0.4;
-    if (activeGamer == "x") {
-        playField.drawImage(XRNDR, -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
-    } else {
-        playField.drawImage(ORNDR, -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
-    }
+
     playField.globalAlpha = 1;
 
-    playField.drawImage(drawPlaceholder(), -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
+    playField.drawImage(placeHolder, -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
     // playField.drawImage(drawPlaceholder(), -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
     playField.restore();
     playField.fillStyle = "#000";
-    playField.font = "40px Bender-Bold";
+    playField.font = "40px MagnoliaScript";
     playField.textBaseline = "middle";
     playField.fillText("PLAYER", 10, 100);
-    // playField.fillText(stepCounter, 10, 200);
+    playField.fillText(stepCounter, 10, 200);
     let measure = Math.floor(playField.measureText("COMPUTER").width);
     playField.fillText("COMPUTER", playField.canvas.width - measure - 10, 100);
-    if (roleValue == "x") {
+    if (userRole == "x") {
         playField.drawImage(XRNDR, 30, 140, 100, 100);
         playField.drawImage(ORNDR, 1150, 140, 100, 100);
     } else {
@@ -327,18 +311,21 @@ window.addEventListener("resize", resize);
 function resize() {
     playField.ratio = playField.canvas.width / playField.canvas.height;
     window.ratio = window.innerWidth / window.innerHeight;
+    let scaleFactor;
     if (window.innerWidth < 1280) {
         if (window.ratio < playField.ratio) {
-            document.querySelector("#app").setAttribute("style", "transform:scale(" + window.innerWidth / 1280 + ")");
+            scaleFactor = window.innerWidth / 1280;
         } else {
-            document.querySelector("#app").setAttribute("style", "transform:scale(" + window.innerHeight / 720 + ")");
+            scaleFactor = window.innerHeight / 720;
         }
         //
     } else if (window.innerHeight < 720) {
-        document.querySelector("#app").setAttribute("style", "transform:scale(" + window.innerHeight / 720 + ")");
+        scaleFactor = window.innerHeight / 720;
     } else {
-        document.querySelector("#app").setAttribute("style", "transform:scale(1)");
+        scaleFactor = 1;
     }
+    document.querySelector('[data="resizeStyle"]').innerHTML = `.adsWindow, #app{transform:scale(${scaleFactor})}`;
+    // document.querySelector("#app").setAttribute("style", "transform:scale(" + scaleFactor + ")");
 }
 
 function initKeyBoard() {
@@ -369,27 +356,24 @@ function keyB(event) {
         case "SPACE":
             if (!battleField[placeHolderCTX.posY / placeHolderCTX.step][placeHolderCTX.posX / placeHolderCTX.step]) {
                 battleField[placeHolderCTX.posY / placeHolderCTX.step][placeHolderCTX.posX / placeHolderCTX.step] =
-                    activeGamer;
-                checkWinner(activeGamer).then(e => {
+                    userRole;
+                isWinner(userRole).then(e => {
                     console.log("e - ", e);
                     if (!e) {
-                        activeGamer = roleSelector[(roleSelector.indexOf(activeGamer) + ++stepCounter) % 2];
-
+                        stepCounter++;
                         setTimeout(() => {
                             compStep();
                         }, 500);
                     } else {
-                        if (activeGamer == userRole) {
-                            console.log("activeGamer - PLAYER", activeGamer, "WINNER");
-                        } else {
-                            console.log("activeGamer - COMPUTER", activeGamer, "WINNER");
-                        }
+                        console.log("PLAYER", userRole, "WINNER");
+
                         setTimeout(() => {
-                            congratsScreen(activeGamer);
+                            congratsScreen(userRole);
                         }, 1000);
                     }
                 });
             }
+            console.log(placeHolderCTX.posY / placeHolderCTX.step, placeHolderCTX.posX / placeHolderCTX.step);
 
             break;
         default:
@@ -398,81 +382,154 @@ function keyB(event) {
 }
 
 function compStep() {
-    variChecker();
-    checkWinner(activeGamer).then(e => {
-        if (!e) {
-            activeGamer = roleSelector[(roleSelector.indexOf(activeGamer) + stepCounter++) % 2];
-        } else {
-            if (activeGamer == userRole) {
-                console.log("activeGamer - PLAYER", activeGamer, "WINNER");
-                // congratsScreen(activeGamer);
+    variChecker().then(() => {
+        isWinner(compRole).then(e => {
+            if (!e) {
+                stepCounter++;
             } else {
-                console.log("activeGamer - COMPUTER", activeGamer, "WINNER");
+                console.log("COMPUTER", compRole, "WINNER");
+
+                setTimeout(() => {
+                    congratsScreen(compRole);
+                }, 1000);
             }
-            setTimeout(() => {
-                congratsScreen(activeGamer);
-            }, 1000);
-        }
+        });
     });
 }
 
-function variChecker() {
-    //////////////////////////// first check
-    if (!battleField[1][1]) {
-        console.log("first check");
-        battleField[1][1] = activeGamer;
-        return;
-    } else {
-        let corners = [battleField[0][0], battleField[0][2], battleField[2][0], battleField[2][2]];
-        // let rndm = Math.round(Math.random() * 3);
-        //////////////////////////// second check
-        let freeCornersArr = [];
-        corners.forEach((elm, i) => {
-            if (elm == "") freeCornersArr.push(i);
-        });
-        let rndm = Math.floor(Math.random() * freeCornersArr.length);
-        // let tmp = corners.findIndex(elem => elem == "");
-        // corners[rndm] = activeGamer;
-        switch (JSON.stringify(freeCornersArr[rndm])) {
-            case "0":
-                console.log("0 - ");
-
-                battleField[0][0] = activeGamer;
-
+function parseArray() {
+    let arrr = battleField.flat();
+    let emptyArrr = [],
+        xArrr = [],
+        oArrr = [];
+    arrr.forEach((item, i) => {
+        switch (item) {
+            case "":
+                emptyArrr.push(i);
                 break;
-            case "1":
-                console.log("1 - ");
-
-                battleField[0][2] = activeGamer;
-
+            case "x":
+                xArrr.push(i);
                 break;
-            case "2":
-                console.log("2 - ");
-                battleField[2][0] = activeGamer;
-
-                break;
-            case "3":
-                console.log("3 - ");
-
-                battleField[2][2] = activeGamer;
+            case "o":
+                oArrr.push(i);
                 break;
 
             default:
                 break;
         }
-        console.log(battleField.flat());
-
-        // console.log(freeCornersArr, freeCornersArr[rndm], "rndm - " + rndm, corners[rndm], corners);
-        // console.log(battleField);
-
-        return;
+    });
+    // return new Promise(res, rej){
+    if (userRole == "o") {
+        return [emptyArrr, oArrr, xArrr];
+    } else {
+        return [emptyArrr, xArrr, oArrr];
     }
-    console.log(battleField);
+    // }
 }
 
-async function checkWinner(gamer) {
-    let checkArr = [];
+async function variChecker() {
+    //////////////////////////// first check
+    console.log(battleField);
+    let flatArr = battleField.flat();
+    let parsedField = parseArray();
+    let emptyCells = parsedField[0],
+        userCells = parsedField[1],
+        compCells = parsedField[2];
+    console.warn("stepcounter", stepCounter);
 
+    if (!battleField[1][1]) {
+        console.log("first check");
+        battleField[1][1] = compRole;
+    } else {
+        if (userCells.length < 2) {
+            console.warn("stepCounter stepCounter < 3", stepCounter, emptyCells, userCells, compCells, userRole);
+            let corners = [0, 2, 6, 8];
+            corners = corners.filter(it => !userCells.includes(it));
+            console.log("corners", corners);
+            let rndm = Math.floor(Math.random() * corners.length);
+            battleField[Math.floor(corners[rndm] / 3)][Math.floor(corners[rndm] % 3)] = compRole;
+            console.log(rndm, Math.floor(corners[rndm] / 3), Math.floor(corners[rndm] % 3));
+        } else if (userCells.length >= 2 && userCells.length < 10) {
+            console.log("stepCounter 5 > stepCounter > 3", stepCounter, emptyCells, userCells, compCells, userRole);
+            let availableUserCombinations = [];
+            let availableCompCombinations = [];
+            let solution = false;
+            for (const cmpCell of compCells) {
+                winCombinations.forEach((combination, i) => {
+                    if (combination.includes(cmpCell)) {
+                        let x = winCombinations[i];
+
+                        if (!availableCompCombinations.includes(i)) {
+                            availableCompCombinations.push(i);
+                        } else {
+                            x = x.filter(it => !userCells.includes(it));
+                            x = x.filter(it => !compCells.includes(it));
+
+                            console.log("x", x);
+                            if (x.length > 0) {
+                                console.log("BEST walk - ", combination, i);
+                                solution = true;
+                                battleField[Math.floor(x[0] / 3)][Math.floor(x[0] % 3)] = compRole;
+                            } else {}
+                        }
+                        console.log("cmpCell", cmpCell, combination);
+                    }
+                });
+            }
+            if (!solution) {
+                for (const usrCell of userCells) {
+                    // console.log("usrCell", usrCell);
+                    winCombinations.forEach((combination, i) => {
+                        if (combination.includes(usrCell)) {
+                            console.log(combination, i);
+                            if (!availableUserCombinations.includes(i)) {
+                                availableUserCombinations.push(i);
+                            } else {
+                                let x = winCombinations[i];
+                                x = x.filter(it => !userCells.includes(it));
+                                x = x.filter(it => !compCells.includes(it));
+
+                                console.log("x", x);
+                                if (x.length > 0) {
+                                    console.log("BEST walk - ", combination, i);
+                                    solution = true;
+                                    battleField[Math.floor(x[0] / 3)][Math.floor(x[0] % 3)] = compRole;
+                                } else {}
+                                // if (compCells.includes(x)) {
+                                //     console.log("compCells includes X");
+                                // }
+                            }
+                            console.log(availableUserCombinations);
+                        }
+                    });
+                    // for (const combination of winCombinations) {
+                    //     if (combination.includes(usrCell)) {
+                    //         console.log(combination);
+                    //     }
+                    // }
+                }
+            }
+            console.log(solution);
+            if (!solution) {
+                let rand = Math.floor(Math.random() * emptyCells.length);
+                console.log("rand", emptyCells, rand);
+                if (emptyCells.length >= 1) {
+                    battleField[Math.floor(emptyCells[rand] / 3)][Math.floor(emptyCells[rand] % 3)] = compRole;
+                    solution = true;
+                } else {
+                    // console.log("no winners today");
+                    // congratsScreen("nowinner");
+                }
+            }
+            // if (!solution) {
+            //     console.log("solution", solution);
+            // }
+        }
+    }
+}
+
+async function isWinner(gamer) {
+    let checkArr = [];
     let arr = battleField.flat();
     //////////////////////////
     var idx = arr.indexOf(gamer);
@@ -480,27 +537,14 @@ async function checkWinner(gamer) {
         checkArr.push(idx);
         idx = arr.indexOf(gamer, idx + 1);
     }
-    console.log("gamer - " + gamer, "arr - " + arr, "checkArr - " + checkArr);
-    const winnerCombinations = [
-        [0, 4, 8],
-        [2, 4, 6],
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-    ];
-    for (const combination of winnerCombinations) {
+    console.log("stepCounter", stepCounter, "gamer - " + gamer, "arr - " + arr, "checkArr - " + checkArr);
+
+    for (const combination of winCombinations) {
         let tempArray = [];
         for (const elem1 of combination) {
             for (const elem2 of checkArr) {
                 if (elem1 == elem2) {
                     tempArray.push(elem1);
-
-                    // if (tempArray == combination) {
-                    //     console.log(tempArray, activeGamer + " WIN !!!!");
-                    // }
                 }
                 if (JSON.stringify(tempArray) === JSON.stringify(combination)) {
                     console.log(gamer + "- WINNER", tempArray, combination);
@@ -509,48 +553,65 @@ async function checkWinner(gamer) {
             }
         }
     }
-    return false;
+    if (parseArray()[0].length == 0) {
+        console.log("no winners today");
+        congratsScreen("nowinner");
+        return false;
+    }
 }
 
 function congratsScreen(gamer) {
-    document.removeEventListener("keydown", keyB);
-    splashScreen("show").then(r => {
-        cancelAnimationFrame(drawHandler);
-        const message = document.createElement("p");
-        gamer == userRole ? (message.innerText = " HUMAN WINNER !!!") : (message.innerText = "COMPUTER WINNER !!!");
-        const playBTN = document.createElement("button");
-        playBTN.setAttribute("id", "play");
-        playBTN.classList.add("btn-hover");
-        playBTN.innerText = "LET'S PLAY !";
-        const awayBTN = document.createElement("button");
-        awayBTN.innerText = "...or go away...";
-        awayBTN.setAttribute("id", "away");
-        awayBTN.classList.add("btn-hover");
-
-        document.querySelector(".splashscreen").appendChild(message);
-        document.querySelector(".splashscreen").appendChild(playBTN);
-        document.querySelector(".splashscreen").appendChild(awayBTN);
-        playBTN.addEventListener("click", playAds);
-        awayBTN.addEventListener("click", () => {
-            window.location.href = "https://google.com";
+    if (congratulationGamer != gamer) {
+        congratulationGamer = gamer;
+        document.removeEventListener("keydown", keyB);
+        splashScreen("show").then(r => {
+            cancelAnimationFrame(drawHandler);
+            const message = document.createElement("p");
+            if (gamer == userRole) {
+                message.innerText = " HUMAN WINNER !!!";
+            } else if (gamer == compRole) {
+                message.innerText = "COMPUTER WINNER !!!";
+            } else if (gamer == "welcome") {
+                message.innerText = "ARE YOU READY TO PLAY?";
+            } else if (gamer == "nowinner") {
+                message.innerText = "NO WINNER FOR THIS ROUND";
+            }
+            const playBTN = document.createElement("div");
+            playBTN.setAttribute("id", "play");
+            playBTN.classList.add("btn-hover");
+            playBTN.classList.add("active");
+            playBTN.innerText = "LET'S PLAY !";
+            const awayBTN = document.createElement("div");
+            awayBTN.innerText = "...or go away...";
+            awayBTN.setAttribute("id", "away");
+            awayBTN.classList.add("btn-hover");
+            document.querySelector(".splashscreen").appendChild(message);
+            document.querySelector(".splashscreen").appendChild(playBTN);
+            document.querySelector(".splashscreen").appendChild(awayBTN);
+            // playBTN.addEventListener("click", runApp);
+            playBTN.addEventListener("click", playAds);
+            awayBTN.addEventListener("click", () => {
+                window.location.href = "https://google.com";
+            });
+            document.addEventListener("keydown", splashKeyB);
         });
-    });
+    }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
+function splashKeyB(event) {
+    var keyPush = event.code.toUpperCase();
+    switch (keyPush) {
+        case "ARROWDOWN":
+        case "ARROWUP":
+            document.querySelectorAll(".splashscreen div").forEach(div => {
+                div.classList.toggle("active");
+            });
+            break;
+
+        case "SPACE":
+            document.querySelector(".splashscreen div.active").click();
+            break;
+        default:
+            break;
+    }
+}

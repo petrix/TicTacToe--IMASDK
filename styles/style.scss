@@ -48,13 +48,12 @@ body {
     &>p {
         font-family: MagnoliaScript;
         font-size: 70px;
-        text-shadow: 0 4px 15px 0 rgba(172, 80, 149, 0.75);
+        text-shadow: 0 5px 10px rgba(44, 21, 38, 0.75);
+        text-align: center;
     }
-    &>button {
+    &>div {
         font-family: MagnoliaScript;
         font-size: 40px;
-        &:focus {
-            background-color: red;
-        }
+        text-shadow: 0 5px 10px rgba(44, 21, 38, 0.75);
     }
 }
