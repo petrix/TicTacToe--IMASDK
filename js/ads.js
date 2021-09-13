@@ -196,10 +196,10 @@ function onAdEvent(adEvent) {
 
 function onAdError(adErrorEvent) {
     // Handle the error logging.
+    videoContent.play();
     console.log(adErrorEvent.getError());
     adsManager.destroy();
     // Fall back to playing content.
-    videoContent.play();
 }
 
 function onContentPauseRequested() {

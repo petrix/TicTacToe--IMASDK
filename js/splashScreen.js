@@ -36,7 +36,7 @@ export async function adsScreen(option) {
     switch (option) {
         case "hide":
             adWin.style.animationName = "hide";
-            adWin.style.animationDuration = "1s";
+            adWin.style.animationDuration = "500ms";
             adWin.style.animationPlayState = "running";
 
             adWin.onanimationend = () => {

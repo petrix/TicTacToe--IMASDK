@@ -54,10 +54,10 @@ function runApp() {
             }
         })
         .then(e => {
-            setTimeout(() => {
-                document.querySelector(".splashscreen").innerHTML = "";
-                document.querySelector(".adsWindow").innerHTML = "";
-            }, 1000);
+            // setTimeout(() => {
+            //     document.querySelector(".splashscreen").innerHTML = "";
+            //     document.querySelector(".adsWindow").innerHTML = "";
+            // }, 1000);
         });
 }
 
@@ -109,6 +109,7 @@ function playAds() {
         console.log(e, "splashScreen hidden");
         initDesktopAutoplayExample();
         console.log(contentElement);
+
         contentElement.addEventListener("ended", () => {
             console.log("VIDEO ENDED");
             adsScreen("hide").then(e => {
