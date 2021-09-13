@@ -292,7 +292,7 @@ function draw() {
     playField.font = "40px MagnoliaScript";
     playField.textBaseline = "middle";
     playField.fillText("PLAYER", 10, 100);
-    playField.fillText(stepCounter, 10, 200);
+    // playField.fillText(stepCounter, 10, 200);
     let measure = Math.floor(playField.measureText("COMPUTER").width);
     playField.fillText("COMPUTER", playField.canvas.width - measure - 10, 100);
     if (userRole == "x") {
@@ -477,29 +477,41 @@ async function variChecker() {
                 });
             }
             if (!solution) {
+                let bestWalk = [];
                 for (const usrCell of userCells) {
                     // console.log("usrCell", usrCell);
-                    winCombinations.forEach((combination, i) => {
+                    winCombinations.forEach((combination, winCombNumber) => {
                         if (combination.includes(usrCell)) {
-                            console.log(combination, i);
-                            if (!availableUserCombinations.includes(i)) {
-                                availableUserCombinations.push(i);
+                            console.log(combination, winCombNumber);
+                            if (!availableUserCombinations.includes(winCombNumber)) {
+                                availableUserCombinations.push(winCombNumber);
                             } else {
-                                let x = winCombinations[i];
+                                let x = winCombinations[winCombNumber];
                                 x = x.filter(it => !userCells.includes(it));
                                 x = x.filter(it => !compCells.includes(it));
 
                                 console.log("x", x);
                                 if (x.length > 0) {
-                                    console.log("BEST walk - ", combination, i);
-                                    solution = true;
-                                    battleField[Math.floor(x[0] / 3)][Math.floor(x[0] % 3)] = compRole;
+                                    console.log("BEST walk - ", combination, winCombNumber, x);
+                                    bestWalk.push(winCombNumber);
+                                    console.log("bestWalk - ", bestWalk, x);
+                                    if (bestWalk.length > 0) {
+                                        let xx = winCombinations[bestWalk[0]];
+                                        xx = xx.filter(it => !userCells.includes(it));
+                                        xx = xx.filter(it => !compCells.includes(it));
+                                        battleField[Math.floor(xx[0] / 3)][Math.floor(xx[0] % 3)] =
+                                            compRole;
+                                        solution = true;
+                                    } else {
+                                        solution = false;
+                                    }
                                 } else {}
+
                                 // if (compCells.includes(x)) {
                                 //     console.log("compCells includes X");
                                 // }
                             }
-                            console.log(availableUserCombinations);
+                            console.log("availableUserCombinations", availableUserCombinations);
                         }
                     });
                     // for (const combination of winCombinations) {
@@ -555,8 +567,10 @@ async function isWinner(gamer) {
     }
     if (parseArray()[0].length == 0) {
         console.log("no winners today");
-        congratsScreen("nowinner");
-        return false;
+        setTimeout(() => {
+            congratsScreen("nowinner");
+            return false;
+        }, 1000);
     }
 }
 
@@ -568,9 +582,9 @@ function congratsScreen(gamer) {
             cancelAnimationFrame(drawHandler);
             const message = document.createElement("p");
             if (gamer == userRole) {
-                message.innerText = " HUMAN WINNER !!!";
+                message.innerText = " HUMAN WINS !!!";
             } else if (gamer == compRole) {
-                message.innerText = "COMPUTER WINNER !!!";
+                message.innerText = "COMPUTER WINS !!!";
             } else if (gamer == "welcome") {
                 message.innerText = "ARE YOU READY TO PLAY?";
             } else if (gamer == "nowinner") {

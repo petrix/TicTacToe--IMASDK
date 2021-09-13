@@ -3,7 +3,7 @@ export async function splashScreen(option) {
     switch (option) {
         case "hide":
             splash.style.animationName = "hide";
-            splash.style.animationDuration = "1s";
+            splash.style.animationDuration = "500ms";
             splash.style.animationPlayState = "running";
 
             splash.onanimationend = () => {
