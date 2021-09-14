@@ -7,7 +7,6 @@ playField.canvas.height = 720;
 document.querySelector("#app").appendChild(playField.canvas);
 const roleSelector = ["x", "o"];
 let roleValue;
-// let activeGamer;
 let stepCounter = 0;
 let drawHandler;
 let congratulationGamer = "";
@@ -32,33 +31,27 @@ function runApp() {
     congratulationGamer = "";
     console.clear();
     console.log("runAPP");
+    document.removeEventListener("keydown", splashKeyB);
     battleField.forEach(arr => arr.fill(""));
     stepCounter = 0;
+
     initKeyBoard();
     cancelAnimationFrame(drawHandler);
     draw();
+
+    roleValue = roleSelector[Math.round(Math.random())];
+    if (roleValue == "x") {
+        compRole = "x";
+        userRole = "o";
+        console.log("comp first", compRole, "user", userRole);
+        compStep();
+    } else {
+        userRole = "x";
+        compRole = "o";
+        console.log("user first", userRole, "comp", compRole);
+    }
+    splashScreen("hide");
     adsScreen("hide");
-    splashScreen("hide")
-        .then(z => {
-            document.removeEventListener("keydown", splashKeyB);
-            roleValue = roleSelector[Math.round(Math.random())];
-            if (roleValue == "x") {
-                compRole = "x";
-                userRole = "o";
-                console.log("comp first", compRole, "user", userRole);
-                compStep();
-            } else {
-                userRole = "x";
-                compRole = "o";
-                console.log("user first", userRole, "comp", compRole);
-            }
-        })
-        .then(e => {
-            setTimeout(() => {
-                document.querySelector(".splashscreen").innerHTML = "";
-                document.querySelector(".adsWindow").innerHTML = "";
-            }, 1000);
-        });
 }
 
 function rmBtnEvtListeners() {
@@ -103,18 +96,17 @@ function playAds() {
     contentElement.addEventListener("loadeddata", console.log("loadeddata"));
     contentElement.addEventListener("canplay", console.log("canplay"));
     // document.querySelector(".splashscreen").after(adsWindow);
-
+    initDesktopAutoplayExample();
+    document.removeEventListener("keydown", splashKeyB);
     splashScreen("hide").then(e => {
-        document.removeEventListener("keydown", splashKeyB);
         console.log(e, "splashScreen hidden");
-        initDesktopAutoplayExample();
+
         console.log(contentElement);
 
         contentElement.addEventListener("ended", () => {
             console.log("VIDEO ENDED");
-            adsScreen("hide").then(e => {
-                runApp();
-            });
+            runApp();
+            adsScreen("hide");
         });
     });
 }
@@ -201,7 +193,8 @@ function drawGrid() {
     gridCTX.save();
     gridCTX.translate(gridCTX.canvas.height / 2, gridCTX.canvas.height / 2);
     // playField.translate(0, 0);
-    gridCTX.lineWidth = gridCTX.canvas.height / 50;
+    // gridCTX.lineWidth = gridCTX.canvas.height / 30;
+    gridCTX.lineWidth = 20;
     gridCTX.lineCap = "round";
     gridCTX.fillStyle = "#000";
     gridCTX.strokeStyle = "#000";
@@ -254,16 +247,6 @@ function drawSquare() {
         }),
     );
 
-    squareCTX.save();
-    squareCTX.translate(
-        squareCTX.canvas.width / 2 + placeHolderCTX.posX - placeHolderCTX.step,
-        squareCTX.canvas.height / 2 + placeHolderCTX.posY - placeHolderCTX.step,
-    );
-    // squareCTX.drawImage(drawPlaceholder(), -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
-    squareCTX.restore();
-    /////////////////////////////////
-
-    ///////////////////////////////
     return squareCTX.canvas;
 }
 
@@ -283,28 +266,38 @@ function draw() {
         playField.canvas.width / 2 + placeHolderCTX.posX - placeHolderCTX.step,
         playField.canvas.height / 2 + placeHolderCTX.posY - placeHolderCTX.step,
     );
-
-    playField.globalAlpha = 1;
-
     playField.drawImage(placeHolder, -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
     // playField.drawImage(drawPlaceholder(), -placeHolderCTX.canvas.width / 2, -placeHolderCTX.canvas.height / 2);
     playField.restore();
     playField.fillStyle = "#000";
-    playField.font = "40px MagnoliaScript";
+    playField.font = "50px MagnoliaScript";
     playField.textBaseline = "middle";
-    playField.fillText("PLAYER", 10, 100);
+    const gamerIcon = {};
+    gamerIcon.size = 150;
+    gamerIcon.offset = 50;
+    playField.fillText("PLAYER", gamerIcon.offset / 3, gamerIcon.size);
     // playField.fillText(stepCounter, 10, 200);
     let measure = Math.floor(playField.measureText("COMPUTER").width);
-    playField.fillText("COMPUTER", playField.canvas.width - measure - 10, 100);
+    playField.fillText("COMPUTER", playField.canvas.width - measure - gamerIcon.offset / 3, gamerIcon.size);
     if (userRole == "x") {
-        playField.drawImage(XRNDR, 30, 140, 100, 100);
-        playField.drawImage(ORNDR, 1150, 140, 100, 100);
+        playField.drawImage(XRNDR, gamerIcon.offset, gamerIcon.size + gamerIcon.offset, gamerIcon.size, gamerIcon.size);
+        playField.drawImage(
+            ORNDR,
+            1280 - gamerIcon.size - gamerIcon.offset,
+            gamerIcon.size + gamerIcon.offset,
+            gamerIcon.size,
+            gamerIcon.size,
+        );
     } else {
-        playField.drawImage(ORNDR, 30, 140, 100, 100);
-        playField.drawImage(XRNDR, 1150, 140, 100, 100);
+        playField.drawImage(ORNDR, gamerIcon.offset, gamerIcon.size + gamerIcon.offset, gamerIcon.size, gamerIcon.size);
+        playField.drawImage(
+            XRNDR,
+            1280 - gamerIcon.size - gamerIcon.offset,
+            gamerIcon.size + gamerIcon.offset,
+            gamerIcon.size,
+            gamerIcon.size,
+        );
     }
-
-    ////////////////////////////////
 }
 
 window.addEventListener("resize", resize);
@@ -579,37 +572,42 @@ function congratsScreen(gamer) {
     if (congratulationGamer != gamer) {
         congratulationGamer = gamer;
         document.removeEventListener("keydown", keyB);
-        splashScreen("show").then(r => {
-            cancelAnimationFrame(drawHandler);
-            const message = document.createElement("p");
-            if (gamer == userRole) {
-                message.innerText = " HUMAN WINS !!!";
-            } else if (gamer == compRole) {
-                message.innerText = "COMPUTER WINS !!!";
-            } else if (gamer == "welcome") {
-                message.innerText = "ARE YOU READY TO PLAY?";
-            } else if (gamer == "nowinner") {
-                message.innerText = "NO WINNER FOR THIS ROUND";
-            }
-            const playBTN = document.createElement("div");
-            playBTN.setAttribute("id", "play");
-            playBTN.classList.add("btn-hover");
-            playBTN.classList.add("active");
-            playBTN.innerText = "LET'S PLAY !";
-            const awayBTN = document.createElement("div");
-            awayBTN.innerText = "...or go away...";
-            awayBTN.setAttribute("id", "away");
-            awayBTN.classList.add("btn-hover");
-            document.querySelector(".splashscreen").appendChild(message);
-            document.querySelector(".splashscreen").appendChild(playBTN);
-            document.querySelector(".splashscreen").appendChild(awayBTN);
-            // playBTN.addEventListener("click", runApp);
+
+        const message = document.createElement("p");
+        if (gamer == userRole) {
+            message.innerText = " HUMAN WINS !!!";
+        } else if (gamer == compRole) {
+            message.innerText = "COMPUTER WINS !!!";
+        } else if (gamer == "welcome") {
+            message.innerText = "ARE YOU READY TO PLAY?";
+        } else if (gamer == "nowinner") {
+            message.innerText = "NO WINNER FOR THIS ROUND";
+        }
+        const playBTN = document.createElement("div");
+        playBTN.setAttribute("id", "play");
+        playBTN.classList.add("btn-hover");
+        playBTN.classList.add("active");
+        playBTN.innerText = "LET'S PLAY !";
+        const awayBTN = document.createElement("div");
+        awayBTN.innerText = "...or go away...";
+        awayBTN.setAttribute("id", "away");
+        awayBTN.classList.add("btn-hover");
+        document.querySelector(".splashscreen").appendChild(message);
+        document.querySelector(".splashscreen").appendChild(playBTN);
+        document.querySelector(".splashscreen").appendChild(awayBTN);
+        cancelAnimationFrame(drawHandler);
+        playField.clearRect(0, 0, playField.canvas.width, playField.canvas.height);
+        if (document.querySelector("#advPreroll").checked) {
             playBTN.addEventListener("click", playAds);
-            awayBTN.addEventListener("click", () => {
-                window.location.href = "https://google.com";
-            });
-            document.addEventListener("keydown", splashKeyB);
+        } else {
+            playBTN.addEventListener("click", runApp);
+        }
+        //
+        awayBTN.addEventListener("click", () => {
+            window.location.href = "https://google.com";
         });
+        document.addEventListener("keydown", splashKeyB);
+        splashScreen("show");
     }
 }
 

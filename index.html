@@ -26,7 +26,7 @@
             font-size: 6vh;
             color: wheat;
             /* animation: hide 1s forwards; */
-            animation-play-state: paused;
+            /* animation-play-state: paused; */
         }
         
         .splashscreen {
@@ -37,15 +37,6 @@
             z-index: 1000;
         }
         
-        @keyframes hide {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0;
-            }
-        }
-        
         @keyframes show {
             from {
                 opacity: 0;
@@ -54,10 +45,34 @@
                 opacity: 1;
             }
         }
+        
+        @keyframes hide {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <label class="toggle" for="advPreroll">
+			<input type="checkbox" class="toggle__input" id="advPreroll" checked />
+            advertising preroll -  
+			<span class="toggle-track">
+				<span class="toggle-indicator">
+					<!-- 	This check mark is optional	 -->
+					<span class="checkMark">
+						<svg viewBox="0 0 24 24" id="ghq-svg-check" role="presentation" aria-hidden="true">
+							<path d="M9.86 18a1 1 0 01-.73-.32l-4.86-5.17a1.001 1.001 0 011.46-1.37l4.12 4.39 8.41-9.2a1 1 0 111.48 1.34l-9.14 10a1 1 0 01-.73.33h-.01z"></path>
+						</svg>
+					</span>
+				</span>
+			</span>
+			
+		</label>
     <style data="resizeStyle" type="text/css"></style>
     <section class="splashscreen">
     </section>

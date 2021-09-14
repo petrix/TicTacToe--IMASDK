@@ -1,6 +1,7 @@
 @import "./bender-bold.scss";
 @import "./MagnoliaScript-font.scss";
 @import "./ads.scss";
+@import "./checkbox.scss";
 @import "./btn-hover.scss";
 * {
     outline: none;
@@ -56,6 +57,7 @@ body,
         text-align: center;
     }
     &>div {
+        // color: wheat;
         font-family: MagnoliaScript;
         font-size: 40px;
         text-shadow: 0 5px 10px rgba(44, 21, 38, 0.75);
